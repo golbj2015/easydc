@@ -43,8 +43,11 @@ class Ali(Model):
              aliType       类型  Leader  Follower
     '''
    
-    def __init__(self,aliId,ip,threadNum = 5,weight = 0):
+    def __init__(self,aliId,threadNum=5):
         '''初始化
+
+           aliId - 实例id 唯一值 可以使用uuid4()生成
+           threadNum - 处理计算的线程数
         '''
         super(Ali, self).__init__()
         self.Name = "Ali"
@@ -64,23 +67,25 @@ class Ali(Model):
         self.aliData = None
         self.aliId = aliId
         self.aliType = ALI_TYPE_FOLLOWER
+        
 
 
     # 基础功能////////////////////////////////////////////////
-    def reg(self,aliId,ip,threadNum=5,weight=0):
+    def reg(self,ip,weight=0):
         ''' 实例注册 
             服务启动时注册，只可以注册一次 由主线程处理
             
             参数：
-                aliId - 实例id 唯一值 可以使用uuid4()生成
+                ip - 服务器IP
+                weight - 子任务分派权重
         '''
         data = {
-            'aliId' : aliId,
+            'aliId' : self.aliId,
             'ip'    : ip,
             'cpu'   : 1,              
             'mem'   : 10240,           
             'io'    : '',
-            'thNum' : threadNum,
+            'thNum' : self.threadNum,
             'runNum': 0,
             'status': ALI_STATUS_NORMAL,
             'weight': weight,

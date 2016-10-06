@@ -18,12 +18,13 @@ def main():
     """The main entry
     """
     aliId      =  str(uuid4())
-    ip     =  '127.0.0.1'
-    ali = Ali(aliId,ip)
+    
+    ali = Ali(aliId)
     try:
         
         #注册运算实例
-        ali.reg(aliId,ip)
+        ip     =  '127.0.0.1'
+        ali.reg(ip)
 
         #开启计算
         executors = dict(map(lambda x: (x.id, x()), EXECUTORS))
@@ -31,7 +32,7 @@ def main():
 
     except KeyboardInterrupt:
         # Ctrl + C
-        #ali.cancel()
+        ali.cancel()
         pass
         
 

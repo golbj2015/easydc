@@ -4,7 +4,7 @@
 import logging
 import gevent
 import random
-
+import sys
 from model import Model
 from const import *
 
@@ -239,7 +239,10 @@ class AluHeartBeat(Alu):
                 leaderBeatPre =0
 
             #print "AluHeartBeat aliId:%s beat heard " % self.aliId
-            print "❤️ %d" % beatCount
+            
+            #跳动心脏及次数            
+            sys.stdout.write("\33[5m\r❤️ %d\033[0m" % beatCount)
+            sys.stdout.flush()
             #睡眠3s 再跳动
             gevent.sleep(3)
 
