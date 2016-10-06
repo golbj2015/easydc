@@ -6,8 +6,8 @@
  python -m easydc
  
  输出日志：
-❤️ 5AluHeartBeat leader ea05df53-422f-44b5-8961-f5eb57dc46a1 selected
-    ❤️ 10AddTaskExecutor start to compute
+1. ❤️ 5AluHeartBeat leader ea05df53-422f-44b5-8961-f5eb57dc46a1 selected
+2. ❤️ 10AddTaskExecutor start to compute
     AddTaskExecutor start to compute
     AddTaskExecutor start to compute
     AddTaskExecutor start to compute
