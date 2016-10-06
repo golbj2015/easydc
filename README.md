@@ -5,6 +5,7 @@
 
  python -m easydc
  
+ 
 ## 输出日志：
 
 * ❤️ 5AluHeartBeat leader ea05df53-422f-44b5-8961-f5eb57dc46a1 selected
@@ -24,3 +25,4 @@
 * AddTaskExecutor end compute
 * ❤️ 34EchoTaskExecutor start to merge
 * ❤️ 44EchoTaskExecutor end merge
+ 
