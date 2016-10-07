@@ -5,24 +5,7 @@
 
  python -m easydc
  
- 
-## 输出日志：
+# 设计文档
 
-* ❤️ 5AluHeartBeat leader ea05df53-422f-44b5-8961-f5eb57dc46a1 selected
-* ❤️ 10AddTaskExecutor start to compute
-* AddTaskExecutor start to compute
-* AddTaskExecutor start to compute
-* AddTaskExecutor start to compute
-* AddTaskExecutor start to compute
-* ❤️ 20AddTaskExecutor end compute
-* AddTaskExecutor end compute
-* AddTaskExecutor end compute
-* AddTaskExecutor end compute
-* AddTaskExecutor end compute
-* AddTaskExecutor start to compute
-* AddTaskExecutor start to compute
-* ❤️ 30AddTaskExecutor end compute
-* AddTaskExecutor end compute
-* ❤️ 34EchoTaskExecutor start to merge
-* ❤️ 44EchoTaskExecutor end merge
- 
+[分布式计算框架设计方案](https://github.com/golbj2015/easydc/blob/master/doc/%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3.md)
+
