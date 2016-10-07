@@ -62,6 +62,8 @@ class PTask(Model):
         ''' 新增父任务
         '''
         self.addModel(self.Name,data,'PTaskId')
+        
+ 
 
 
 class SubTask(Model):

@@ -29,7 +29,15 @@ ALI_STATUS_ABNORMAL = 'abnormal'    #异常
 COMPUTE_TYPE_COMPUTE = 'compute'    #运算
 COMPUTE_TYPE_MERGE = 'merge'        #合并
 
- 
+#时间间隔配置
+SLEEP_NOT_LEADER = 10         #检查是否为Leader 
+SLEEP_NO_ALLOTTASK = 3        #没有待分派的任务
+SLEEP_HEARTBEAT  = 3          #心跳间隔
+SLEEP_CHECK_ALI  = 10         #检查实例
+SLEEP_CHECK_TASK  = 60        #检查任务
+SLEEP_NO_COMPUTETASK = 5      #没有待计算任务
+SLEEP_POOL_FULL    = 3        #线程池满了
+
 #Mongodb 配置
 DC_MONGO_HOST = 'localhost'
 DC_MONGO_PORT = 27017

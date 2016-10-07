@@ -53,9 +53,9 @@ class AluTaskAllot(Alu):
 
         while True:
 
-            #判断是非为Leader 如果不是sleep 3s 
+            #判断是非为Leader 如果不是 sleep 
             if obj.aliType != ALI_TYPE_LEADER:
-                gevent.sleep(10)
+                gevent.sleep(SLEEP_NOT_LEADER)
                 #print "AluTaskAllot not leader sleep 10s"
                 continue
 
@@ -66,7 +66,7 @@ class AluTaskAllot(Alu):
             tasks = self.getModels('TaskQuere',query,100)
 
             if tasks.count()==0:
-                gevent.sleep(3)
+                gevent.sleep(SLEEP_NO_ALLOTTASK)
                 #print "AluTaskAllot no data sleep 3s"
                 continue
 
@@ -122,11 +122,24 @@ class AluCompute(Alu):
         #更新子任务状态为 TASK_STATUS_COMPUTING
         self.updateModel('TaskQuere',{'_id':taskId},{'status':TASK_STATUS_COMPUTING})
 
-    
         if computeType==COMPUTE_TYPE_COMPUTE:
             #执行用户算法
             ptaskId = task['PTaskId']
-            result = executor(computeType,task)
+
+            result = None
+            try:
+                result = executor(computeType,task)
+            except Exception,e:
+
+                print "subtask %s fail to compute, error message:%s" %(taskId,str(e))
+                taskQ = self.getModel('TaskQuere',{'_id':taskId})
+                #重试3次
+                tryCount = taskQ.get('tryCount',0) + 1
+                if tryCount <= 3:
+                    self.updateModel('SubTask',{'_id':taskId},{'status':TASK_STATUS_FAILED,'errInfo':str(e)})
+                    self.updateModel('TaskQuere',{'_id':taskId},{'tryCount':tryCount,'status':TASK_STATUS_SPLITED})
+
+                    return
 
             #记录每次运算结果
             self.updateModel('SubTask',{'_id':taskId},{'result':result})
@@ -161,19 +174,16 @@ class AluCompute(Alu):
         else:
 
             #查询所有子任务结果
-
-            query = {
-                     'PTaskId' : taskId 
-                }
-
-            subTasks = self.getModels('SubTask',query,1000)
-
-            executor(computeType,subTasks)
-
-            #更新子任务状态为TASK_STATUS_COMPELED
-            self.updateModel('TaskQuere',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
-            self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
+            subTasks = self.getModels('SubTask',{'PTaskId' : taskId },1000)
+            try:
+                executor(computeType,subTasks)
+            except Exception,e:
+                self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_FAILED,'errInfo':str(e)})
+            else:
+                #更新子任务状态为TASK_STATUS_COMPELED
+                self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
             
+            self.updateModel('TaskQuere',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
 
 class AluHeartBeat(Alu):
     ''' 心跳单元
@@ -206,6 +216,10 @@ class AluHeartBeat(Alu):
 
             self.updateModel('Ali',{'_id':self.aliId},{'beat':beatCount})
 
+            #检查完成的任务  Leader负责
+            self._getPtaskStatus(obj)
+
+
             #检查Leader是否还活着
             leaderId = ''
             if stepNum==1:
@@ -214,7 +228,6 @@ class AluHeartBeat(Alu):
             if stepNum==3:
                 leaderBeatNext,leaderId = self._getLeaderBeat()
 
-            
             # leader dead
             if stepNum==3 and leaderBeatNext == leaderBeatPre:
                 if leaderId:
@@ -244,7 +257,7 @@ class AluHeartBeat(Alu):
             sys.stdout.write("\33[5m\r❤️ %d\033[0m" % beatCount)
             sys.stdout.flush()
             #睡眠3s 再跳动
-            gevent.sleep(3)
+            gevent.sleep(SLEEP_HEARTBEAT)
 
     def _getLeaderBeat(self):
         ''' 获取beat数
@@ -273,6 +286,27 @@ class AluHeartBeat(Alu):
             self.updateModel('Ali',{'_id':ali['_id']},{'aliType':ALI_TYPE_LEADER})
             print "AluHeartBeat leader %s selected" % ali['_id']
 
+    def _getPtaskStatus(self,obj):
+        '''获得Ptask状态
+            如果父任务已经设置为完成，正在运行的子任务需要强制完成
+        '''
+        query = {
+                     'status' : TASK_STATUS_COMPUTING 
+                }
+
+        runningTasks = self.getModels('TaskQuere',query,100)
+
+        ptaskIds = list(set([task['PTaskId'] for task in runningTasks]))
+
+        pquery = {
+            '_id'    : {"$in":ptaskIds},
+            'status' : {"$in":[TASK_STATUS_COMPUTED]}
+        }
+        ptasks = self.getModels('PTask',pquery,100)
+
+        obj.finishedPtask = [task['_id'] for task in ptasks] 
+
+
             
    
 class AluCheckAli(Alu):
@@ -291,9 +325,9 @@ class AluCheckAli(Alu):
         
         while True:
             
-            #判断是非为Leader 如果不是sleep 3s 
+            #判断是非为Leader 如果不是sleep 
             if obj.aliType != ALI_TYPE_LEADER:
-                gevent.sleep(10)
+                gevent.sleep(SLEEP_NOT_LEADER)
                 #print "AluCheckAli not leader sleep 10s"
                 continue
 
@@ -304,7 +338,7 @@ class AluCheckAli(Alu):
             followers_pre = self._list2dict(self.getModels('Ali',query,100))
             
             #睡眠10s 
-            gevent.sleep(10)
+            gevent.sleep(SLEEP_CHECK_ALI)
             followers_next = self._list2dict(self.getModels('Ali',query,100))
 
             for ali_id in followers_next:
@@ -345,9 +379,9 @@ class AluCheckTask(Alu):
         
         while True:
             
-            #判断是非为Leader 如果不是sleep 3s 
+            #判断是非为Leader 如果不是sleep 
             if obj.aliType != ALI_TYPE_LEADER:
-                gevent.sleep(10)
+                gevent.sleep(SLEEP_NOT_LEADER)
                 #print "AluCheckTask not leader sleep 10s"
                 continue
 
@@ -364,8 +398,8 @@ class AluCheckTask(Alu):
 
                     print "AluCheckTask %s realloted"%task['taskId']
 
-            #5分钟检查一次
-            gevent.sleep(300)
+            #1分钟检查一次
+            gevent.sleep(SLEEP_CHECK_TASK)
  
 
       

@@ -25,15 +25,21 @@ class TestTaskSplit(unittest.TestCase):
     def test_run(self):
         ''' 测试分割方法
         '''
+        '''
         bizType      =  'edc.echo'
         bizPtask     =  'echo task'
         bizSubTasks  =  ['11','21','31','22','33','44','55',"66",'77','88']
+        '''
 
-        ret = self.taskSplit.run(bizType,bizPtask,bizSubTasks)
+        bizType      =  'edc.crackmd5'
+        bizPtask     =  'crack md5 len: 6'
 
-        bizType      =  'edc.add'
-        bizPtask     =  'add task'
-        bizSubTasks  =  ['110','210','310','220','330','440','550','660','770','880']
+        md5 = '09191f6b5a9c4b452b53735b85e3f55d' #a3L
+        
+        bizSubTasks  =  [
+                    {'md5':md5,'md5len':3},
+                    {'md5':md5,'md5len':3}
+                ]
 
         ret = self.taskSplit.run(bizType,bizPtask,bizSubTasks)
 

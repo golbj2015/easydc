@@ -46,10 +46,10 @@ class TestAli(unittest.TestCase):
     def test_allotTask(self):
         '''测试分派
         '''
-        self.ali.heartbeat()
-        self.ali.allotTask()
+        self.ali._heartbeat()
+        self.ali._allotTask()
 
-        self.ali.waitall()
+        self.ali._waitall()
 
         self.assertEqual(True, True)
 
@@ -57,34 +57,34 @@ class TestAli(unittest.TestCase):
         '''测试计算
         '''
         executors = dict(map(lambda x: (x.id, x()), EXECUTORS))
-        self.ali.compute(executors)
+        self.ali._compute(executors)
 
-        self.ali.waitall()
+        self.ali._waitall()
 
         self.assertEqual(True, True)
 
     def test_heardbeat(self):
         '''测试心跳
         '''
-        self.ali.heartbeat()
-        self.ali.waitall()
+        self.ali._heartbeat()
+        self.ali._waitall()
 
         self.assertEqual(True, True)
 
     def test_checkAli(self):
         '''测试检查实例
         '''
-        self.ali.checkAli()
-        self.ali.waitall()
+        self.ali._checkAli()
+        self.ali._waitall()
 
         self.assertEqual(True, True)
 
     def test_checkTask(self):
         '''测试检查任务
         '''
-        self.ali.heartbeat()
-        self.ali.checkTask()
-        self.ali.waitall()
+        self.ali._heartbeat()
+        self.ali._checkTask()
+        self.ali._waitall()
 
         self.assertEqual(True, True)
 

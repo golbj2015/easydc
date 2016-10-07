@@ -3,6 +3,7 @@
 
 import logging
 import gevent
+import copy
 from gevent.pool import Pool
 from uuid import uuid4
 from model import Model
@@ -10,7 +11,7 @@ from const import *
 from alu import *
 
 ''' 运算实例基类
-  一个运算进程（对于一个docker实例） 每个进程有唯一的编号:ALIID
+  一个运算进程（对应一个docker实例） 每个进程有唯一的编号:ALIID
 
 '''
 class Ali(Model):
@@ -67,6 +68,9 @@ class Ali(Model):
         self.aliData = None
         self.aliId = aliId
         self.aliType = ALI_TYPE_FOLLOWER
+
+        #强制完成的任务
+        self.finishedPtask = []
         
 
 
@@ -118,25 +122,37 @@ class Ali(Model):
         ''' 执行入口
         '''
         #开启心跳
-        self.heartbeat()
+        self._heartbeat()
 
         #实例检查
-        self.checkAli()
+        self._checkAli()
 
         #任务检查
-        self.checkTask()
+        self._checkTask()
 
         #任务分派
-        self.allotTask()
+        self._allotTask()
 
         #开启计算功能
-        self.compute(executors)
+        self._compute(executors)
 
         #等待任务执行
-        self.waitall()
+        self._waitall()
 
+    def checkFinished(self,ptaskId):
+        '''检查是否完成  对外接口
+        '''
+        if ptaskId in self.finishedPtask:
+            return True
 
-    def heartbeat(self):
+        return False
+
+    def finishPTask(self,ptaskId):
+        '''强制关闭任务 对外接口
+        '''
+        self.updateModel('PTask',{'_id':ptaskId},{'status':TASK_STATUS_COMPUTED})
+
+    def _heartbeat(self):
         '''发起心跳  
           功能：
             1.ALI 会定时反馈一个消息表示自己还有效 
@@ -144,7 +160,7 @@ class Ali(Model):
         '''
         self.jobs.append(gevent.spawn(self.aluHeartBeat.run,self))
 
-    def compute(self,executors):
+    def _compute(self,executors):
         ''' 子任务运算 
             多个线程同时处理子任务
 
@@ -156,7 +172,7 @@ class Ali(Model):
 
         #self.jobs.append(aliPool.spawn(self.aluCompute.run,executors))
 
-        def getQuere(obj,executors,pool):
+        def getQuere(obj,executors,pool,aliObj):
 
             while True:
                 
@@ -168,7 +184,7 @@ class Ali(Model):
                 taskQueres = obj.getModels('TaskQuere',query,100)
 
                 if taskQueres.count() == 0:
-                    gevent.sleep(5)
+                    gevent.sleep(SLEEP_NO_COMPUTETASK)
                     #print "compute.getQuere no data sleep 5s"
                     continue 
 
@@ -185,26 +201,26 @@ class Ali(Model):
 
                         computeType = COMPUTE_TYPE_MERGE
                     else:
-                        #TODO::异常
-                        pass
+                        raise ValueError('taskType:%s error'%taskType)
 
-
-                    executor = executors.get(taskInfo['bizType'])
-                    if executor:
-
+                    executorObj = executors.get(taskInfo['bizType'])
+                    if executorObj:
+                        #避免多线程 资源共享问题
+                        executor = copy.deepcopy(executorObj)
+                        executor.ali = aliObj
                         while pool.full():
                             #print "compute pool full sleep 3s"
-                            gevent.sleep(3)
+                            gevent.sleep(SLEEP_POOL_FULL)
 
                         pool.spawn(obj.aluCompute.run,executor,computeType,taskInfo)
 
                 gevent.sleep(0)
 
-        self.jobs.append(gevent.spawn(getQuere,self,executors,aliPool))
+        self.jobs.append(gevent.spawn(getQuere,self,executors,aliPool,self))
 
     # Leader负责/////////////////////////////////////////////
 
-    def allotTask(self):
+    def _allotTask(self):
         ''' 任务分派 
 
           操作：
@@ -217,12 +233,12 @@ class Ali(Model):
 
         self.jobs.append(gevent.spawn(self.aluTaskAllot.run,self))
 
-    def checkAli(self):
+    def _checkAli(self):
         ''' 检查实例 Leader负责管理各个Follower状态
         '''
         self.jobs.append(gevent.spawn(self.aluCheckAli.run,self))
 
-    def checkTask(self):
+    def _checkTask(self):
         ''' 检查任务 
             需要定时检查任务是否有效，对于僵尸的任务需要重新分派AUI,由Leader负责处理
         '''
@@ -231,7 +247,7 @@ class Ali(Model):
  
     #公共区域/////////////////////////////////////////////////
 
-    def waitall(self):
+    def _waitall(self):
         '''等待任务执行
         '''
         gevent.joinall(self.jobs)
