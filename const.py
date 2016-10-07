@@ -29,7 +29,7 @@ ALI_STATUS_ABNORMAL = 'abnormal'    #异常
 COMPUTE_TYPE_COMPUTE = 'compute'    #运算
 COMPUTE_TYPE_MERGE = 'merge'        #合并
 
-#时间间隔配置
+#间隔配置
 SLEEP_NOT_LEADER = 10         #检查是否为Leader 
 SLEEP_NO_ALLOTTASK = 3        #没有待分派的任务
 SLEEP_HEARTBEAT  = 3          #心跳间隔

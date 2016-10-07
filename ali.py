@@ -152,6 +152,13 @@ class Ali(Model):
         '''
         self.updateModel('PTask',{'_id':ptaskId},{'status':TASK_STATUS_COMPUTED})
 
+    def updateProcess(self,taskId,process):
+        '''更新进度
+           process 进度
+        ''' 
+        self.updateModel('SubTask',{'_id':taskId},{'process':process})
+
+
     def _heartbeat(self):
         '''发起心跳  
           功能：

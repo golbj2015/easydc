@@ -307,8 +307,6 @@ class AluHeartBeat(Alu):
         obj.finishedPtask = [task['_id'] for task in ptasks] 
 
 
-            
-   
 class AluCheckAli(Alu):
     '''检查Ali 
     '''

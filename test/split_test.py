@@ -35,10 +35,10 @@ class TestTaskSplit(unittest.TestCase):
         bizPtask     =  'crack md5 len: 6'
 
         md5 = '09191f6b5a9c4b452b53735b85e3f55d' #a3L
-        
+
         bizSubTasks  =  [
                     {'md5':md5,'md5len':3},
-                    {'md5':md5,'md5len':3}
+                    {'md5':md5,'md5len':4}
                 ]
 
         ret = self.taskSplit.run(bizType,bizPtask,bizSubTasks)
