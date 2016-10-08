@@ -1,2 +1,3 @@
 *.pyc
 db.py
+.DS_Store

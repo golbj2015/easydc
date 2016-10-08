@@ -127,9 +127,9 @@ class CrackMd5Executor(TaskExecutor):
             gevent.sleep(0)
 
 
-EXECUTORS = {
+EXECUTORS = [
     EchoTaskExecutor,
     AddTaskExecutor,
     CrackMd5Executor
 
- }
+]
