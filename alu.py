@@ -169,7 +169,10 @@ class AluCompute(Alu):
                     'status'    : TASK_STATUS_MERGEING
                 }
 
-                self.addModel('TaskQuere',pdata,'taskId')
+                #判断是否已经加入队列
+                existData = self.getModel('TaskQuere',{'_id':ptaskId})
+                if not existData:
+                    self.addModel('TaskQuere',pdata,'taskId')
 
         else:
 

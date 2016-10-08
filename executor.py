@@ -107,7 +107,7 @@ class CrackMd5Executor(TaskExecutor):
             self.ali.updateProcess(self.subTaskId,process)
             print "%s process %f" % (self.subTaskId,process)
 
-        #print s,md5temp
+        print s,md5temp
         if md5temp==self.md5input:  
             self.ali.updateProcess(self.subTaskId,100)
             print 'crack success:',s,md5temp

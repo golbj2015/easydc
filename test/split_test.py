@@ -34,10 +34,12 @@ class TestTaskSplit(unittest.TestCase):
         bizType      =  'edc.crackmd5'
         bizPtask     =  'crack md5 len: 6'
 
-        md5 = '09191f6b5a9c4b452b53735b85e3f55d' #a3L
+        md5 = '07481d311ef2d591082feb978189744d' #MvCh
 
         bizSubTasks  =  [
-                    {'md5':md5,'md5len':3},
+                    {'md5':md5,'md5len':4},
+                    {'md5':md5,'md5len':4},
+                    {'md5':md5,'md5len':4},
                     {'md5':md5,'md5len':4}
                 ]
 
