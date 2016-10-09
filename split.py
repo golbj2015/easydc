@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # encoding=utf8
 
-import logging
 import time
 from uuid import uuid4
 
 from task import *
 from const import *
+from logger import EdcLogger as Logger
 
- 
+
 ''' 任务分割管理
 '''
-
 class TaskSplit(object):
     ''' 任务分割   
     '''
@@ -38,8 +37,7 @@ class TaskSplit(object):
             'bizInfo' : bizPtask
 
         }
-        PTask().add(ptaskData)
-
+        
         #子任务
         subTaskDatas = []
         taskQueres   = []
@@ -62,14 +60,24 @@ class TaskSplit(object):
                 'taskType'  : TASK_TYPE_SUB,
                 'status'    : TASK_STATUS_SPLITED
                 })
+        try:
+            #添加父任务
+            PTask().add(ptaskData)
 
-        #添加子任务
-        SubTask().add(subTaskDatas)
+            #添加子任务
+            SubTask().add(subTaskDatas)
 
-        #加入队列
-        TaskQuere().push(taskQueres)
+            #加入队列
+            TaskQuere().push(taskQueres)
 
-        return True
+            Logger.log("split","分割为%d个子任务"%len(bizSubTasks),ptaskId=ptaskId)
+
+        except Exception,e:
+
+            Logger.log("split","分割失败 原因:%s"%str(e),info=bizSubTasks,ptaskId=ptaskId,logType=LOG_LEVEL_ERROR)
+            return False,str(e)
+
+        return True,'Success'
 
 
           

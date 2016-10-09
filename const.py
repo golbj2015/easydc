@@ -39,6 +39,14 @@ SLEEP_CHECK_TASK  = 60        #检查任务
 SLEEP_NO_COMPUTETASK = 5      #没有待计算任务
 SLEEP_POOL_FULL    = 3        #线程池满了
 
+#日志级别
+LOG_LEVEL_DEBUG = 'debug'
+LOG_LEVEL_INFO = 'info'
+LOG_LEVEL_ERROR = 'error'
+LOG_LEVEL_WARN = 'warn'
+
+
+
 #Mongodb 配置
 DC_MONGO_HOST = MONGO_HOST
 DC_MONGO_PORT = MONGO_PORT

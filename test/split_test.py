@@ -54,7 +54,7 @@ class TestTaskSplit(unittest.TestCase):
                     {'md5':md5,'md5len':4}
                 ]
 
-        ret = self.taskSplit.run(bizType,bizPtask,bizSubTasks)
+        ret,msg = self.taskSplit.run(bizType,bizPtask,bizSubTasks)
 
         self.assertEqual(ret, True)
 

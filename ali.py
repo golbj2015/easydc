@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding=utf8
 
-import logging
 import gevent
 import copy
 from gevent.pool import Pool
@@ -9,6 +8,7 @@ from uuid import uuid4
 from model import Model
 from const import *
 from alu import *
+from logger import EdcLogger as Logger
 
 ''' 运算实例基类
   一个运算进程（对应一个docker实例） 每个进程有唯一的编号:ALIID
@@ -75,7 +75,7 @@ class Ali(Model):
 
 
     # 基础功能////////////////////////////////////////////////
-    def reg(self,ip,hostname='local',dockerId='',cpu=1,mem=10240,weight=1):
+    def reg(self,ip,hostname='local',dockerName='',cpu=1,mem=10240,weight=1):
         ''' 实例注册 
             服务启动时注册，只可以注册一次 由主线程处理
             
@@ -87,7 +87,7 @@ class Ali(Model):
             'aliId' : self.aliId,
             'ip'    : ip,
             'hostname':hostname,
-            'dockerId':dockerId,  #用来区分docker实例
+            'dockerName':dockerName,  #用来区分docker实例
             'cpu'   : cpu,              
             'mem'   : mem,           
             'io'    : '',
@@ -99,9 +99,15 @@ class Ali(Model):
             'aliType': ALI_TYPE_FOLLOWER
 
         }
-        self.addModel(self.Name,data,'aliId')
+        try:
+            self.addModel(self.Name,data,'aliId')
+            Logger.log("register","注册实例成功",aliId=self.aliId,info=data)
 
-        return data
+        except Exception,e:
+            Logger.log("register","注册实例失败 原因:%s"%str(e),aliId=self.aliId,info=data,logType=LOG_LEVEL_ERROR)
+            return False,str(e)
+
+        return True,data
         
     def cancel(self):
         '''实例注销  更改实例状态为无效
@@ -111,14 +117,22 @@ class Ali(Model):
         updateData = {'status' : ALI_STATUS_ABNORMAL,
                       'aliType' : ALI_TYPE_FOLLOWER 
             }
-        self.updateModel(self.Name,idFilter,updateData)
 
-        #重置任务
-        updateCond = {'aliId':self.aliId,
-                'status':{"$in":[TASK_STATUS_ALLOTED,TASK_STATUS_COMPUTING]}}
-        self.updateModel('TaskQuere',updateCond,{'status':TASK_STATUS_SPLITED})
+        try:
+            self.updateModel(self.Name,idFilter,updateData)
 
-        return True
+            #重置任务
+            updateCond = {'aliId':self.aliId,
+                    'status':{"$in":[TASK_STATUS_ALLOTED,TASK_STATUS_COMPUTING]}}
+            self.updateModel('TaskQuere',updateCond,{'status':TASK_STATUS_SPLITED})
+
+            Logger.log("cancel","实例注销成功",aliId=self.aliId)
+
+        except Exception,e:
+            Logger.log("cancel","实例注销失败 原因:%s"%str(e),aliId=self.aliId,logType=LOG_LEVEL_ERROR)
+            return False,str(e)
+
+        return True,'Success'
 
     def run(self,executors):
         ''' 执行入口
@@ -138,6 +152,8 @@ class Ali(Model):
         #开启计算功能
         self._compute(executors)
 
+        Logger.log("start","实例启动完成",aliId=self.aliId)
+
         #等待任务执行
         self._waitall()
 
@@ -152,7 +168,13 @@ class Ali(Model):
     def finishPTask(self,ptaskId):
         '''强制关闭任务 对外接口
         '''
-        self.updateModel('PTask',{'_id':ptaskId},{'status':TASK_STATUS_COMPUTED})
+        try:
+            self.updateModel('PTask',{'_id':ptaskId},{'status':TASK_STATUS_COMPUTED})
+        except Exception,e:
+            Logger.log("finishTask","强制关闭任务失败 原因:%s"%str(e),ptaskId=ptaskId)
+            return False,str(e)
+
+        return True,'Success'
 
     def updateProcess(self,taskId,process):
         '''更新进度

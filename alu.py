@@ -7,13 +7,12 @@ import random
 import sys
 from model import Model
 from const import *
+from logger import EdcLogger as Logger
 
 ''' 运算单元基类
   最小的运算单位 对应一个线程，每个ALI下可以有多个ALU 
 
 '''
-
-
 class Alu(Model):
     ''' 运算单元基类
 
@@ -70,39 +69,46 @@ class AluTaskAllot(Alu):
                 #print "AluTaskAllot no data sleep 3s"
                 continue
 
-            taskDatas = [task for task in tasks]
+            try:
+                taskDatas = [task for task in tasks]
 
-            #获取可用的实例
-            query = {}
-            query['status'] = ALI_STATUS_NORMAL
-            alis = self.getModels('Ali',query,100)
+                #获取可用的实例
+                query = {}
+                query['status'] = ALI_STATUS_NORMAL
+                alis = self.getModels('Ali',query,100)
 
-            #按照平分规则分派任务 
+                #按照平分规则分派任务 
 
-            #计算每个实例可以分到多少个任务
-            taskCount = tasks.count()/alis.count()
+                #计算每个实例可以分到多少个任务
+                taskCount = tasks.count()/alis.count()
 
-            #最少一个任务
-            if taskCount==0:taskCount=1
+                #最少一个任务
+                if taskCount==0:taskCount=1
 
-            aliIds = [ali['_id'] for ali in alis]
-            #打乱排序
-            random.shuffle(aliIds)
+                aliIds = [ali['_id'] for ali in alis]
+                #打乱排序
+                random.shuffle(aliIds)
 
-            updateTasks = {}
-            for ali_id in aliIds:
-                i = 0
-                for task in taskDatas:
-                    if not updateTasks.has_key(task['_id']):
-                        updateTasks[task['_id']] = ali_id
-                        i+=1
+                updateTasks = {}
+                for ali_id in aliIds:
+                    i = 0
+                    for task in taskDatas:
+                        if not updateTasks.has_key(task['_id']):
+                            updateTasks[task['_id']] = ali_id
+                            i+=1
 
-                    if i==taskCount:
-                        break
+                        if i==taskCount:
+                            break
 
-            for key in updateTasks:
-                updateData = {'aliId':updateTasks[key],'status':TASK_STATUS_ALLOTED}
-                self.updateModel('TaskQuere',{'_id':key},updateData)
+                for key in updateTasks:
+                    updateData = {'aliId':updateTasks[key],'status':TASK_STATUS_ALLOTED}
+                    self.updateModel('TaskQuere',{'_id':key},updateData)
+
+                Logger.log("allot","分派任务成功,%d个任务分派给%d个实例"%(len(taskDatas),len(aliIds)),aliId=self.aliId)
+
+            except Exception,e:
+                Logger.log("allot","分派任务失败, 原因:%s"%str(e),aliId=self.aliId,logType=LOG_LEVEL_ERROR)
+
             gevent.sleep(1)
             
 class AluCompute(Alu):
@@ -146,6 +152,8 @@ class AluCompute(Alu):
 
             self.updateModel('TaskQuere',{'_id':taskId},{'status':TASK_STATUS_COMPUTED})
 
+            Logger.log("compute","计算子任务完成 子任务:%s"%taskId,aliId=self.aliId)
+
             #检查子任务是否都已经运算完成
             query = {
                      'PTaskId' : ptaskId,
@@ -174,7 +182,10 @@ class AluCompute(Alu):
                 if not existData:
                     self.addModel('TaskQuere',pdata,'taskId')
 
+                    Logger.log("mergeing","开始合并",aliId=self.aliId,ptaskId=ptaskId)
+
         else:
+            #执行合并
 
             #查询所有子任务结果
             subTasks = self.getModels('SubTask',{'PTaskId' : taskId },1000)
@@ -182,11 +193,15 @@ class AluCompute(Alu):
                 executor(computeType,subTasks)
             except Exception,e:
                 self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_FAILED,'errInfo':str(e)})
+
+                Logger.log("complete","任务合并失败,原因:%s"%str(e),aliId=self.aliId,ptaskId=taskId,logType=LOG_LEVEL_ERROR)
             else:
                 #更新子任务状态为TASK_STATUS_COMPELED
                 self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
             
             self.updateModel('TaskQuere',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
+
+            Logger.log("complete","任务完成",aliId=self.aliId,ptaskId=taskId)
 
 class AluHeartBeat(Alu):
     ''' 心跳单元
@@ -234,6 +249,7 @@ class AluHeartBeat(Alu):
             # leader dead
             if stepNum==3 and leaderBeatNext == leaderBeatPre:
                 if leaderId:
+
                     #更改为follower abnormal
                     print "AluHeartBeat leader %s dead"%leaderId
                     self.updateModel('Ali',{'_id':leaderId},{'aliType':ALI_TYPE_FOLLOWER,'status':ALI_STATUS_ABNORMAL})
@@ -242,6 +258,8 @@ class AluHeartBeat(Alu):
                     updateCond = {'aliId':leaderId,
                             'status':{"$in":[TASK_STATUS_ALLOTED,TASK_STATUS_COMPUTING]}}
                     self.updateModel('TaskQuere',updateCond,{'status':TASK_STATUS_SPLITED})
+
+                    Logger.log("leaderDead","Leader实例宕掉,实例:%s"%leaderId,aliId=self.aliId,logType=LOG_LEVEL_WARN)
 
                 #选择一个leader
                 leaderBeat,leaderId = self._getLeaderBeat()
@@ -288,6 +306,9 @@ class AluHeartBeat(Alu):
         for ali in alis:
             self.updateModel('Ali',{'_id':ali['_id']},{'aliType':ALI_TYPE_LEADER})
             print "AluHeartBeat leader %s selected" % ali['_id']
+
+            Logger.log("elect","选举成功,新Leader:%s"%ali['_id'],aliId=self.aliId)
+
 
     def _getPtaskStatus(self,obj):
         '''获得Ptask状态
@@ -353,6 +374,8 @@ class AluCheckAli(Alu):
                             'status':{"$in":[TASK_STATUS_ALLOTED,TASK_STATUS_COMPUTING]}}
                     self.updateModel('TaskQuere',updateCond,{'status':TASK_STATUS_SPLITED})
 
+                    Logger.log("checkAli","Follower实例宕掉,实例:%s"%ali_id,aliId=self.aliId,logType=LOG_LEVEL_WARN)
+
 
             followers_pre = None
             followers_next = None
@@ -398,6 +421,9 @@ class AluCheckTask(Alu):
                     self.updateModel('TaskQuere',{'_id':task['taskId']},{'status':TASK_STATUS_SPLITED})
 
                     print "AluCheckTask %s realloted"%task['taskId']
+
+                    Logger.log("checkTask","任务重新分派,任务:%s"%task['taskId'],aliId=self.aliId)
+
 
             #1分钟检查一次
             gevent.sleep(SLEEP_CHECK_TASK)

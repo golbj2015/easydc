@@ -19,8 +19,7 @@ class TestAli(unittest.TestCase):
     def setUp(self):
         
         aliId      =  'testreg3'
-        ip     =  '127.0.0.1'
-        self.ali = Ali(aliId,ip)
+        self.ali = Ali(aliId)
  
     def tearDown(self):
         pass
@@ -29,10 +28,9 @@ class TestAli(unittest.TestCase):
     def test_reg(self):
         ''' 测试注册方法
         '''
-        aliId      =  'testreg2'
         ip     =  '127.0.0.1'
 
-        ret = self.ali.reg(aliId,ip,1,10240,'io')
+        ret,msg = self.ali.reg(ip)
 
         self.assertEqual(ret, True)
 
