@@ -3,8 +3,10 @@
 ''' 工具包
 '''
 
-def getServerIp():
-    '''获得服务器ip
+def getLocalIp():
+    '''获得bip
     '''
 
     return '127.0.0.1'
+
+

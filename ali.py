@@ -75,7 +75,7 @@ class Ali(Model):
 
 
     # 基础功能////////////////////////////////////////////////
-    def reg(self,ip,weight=0):
+    def reg(self,ip,hostname='local',cpu=1,mem=10240,weight=1):
         ''' 实例注册 
             服务启动时注册，只可以注册一次 由主线程处理
             
@@ -86,8 +86,9 @@ class Ali(Model):
         data = {
             'aliId' : self.aliId,
             'ip'    : ip,
-            'cpu'   : 1,              
-            'mem'   : 10240,           
+            'hostname':hostname,
+            'cpu'   : cpu,              
+            'mem'   : mem,           
             'io'    : '',
             'thNum' : self.threadNum,
             'runNum': 0,
