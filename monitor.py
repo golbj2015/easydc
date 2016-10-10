@@ -73,7 +73,7 @@ class EdcMonitor(object):
         '''显示
         '''
         
-        ptAli = PrettyTable(["实例", "类型","状态","Ip","Host","Cpu","Mem","线程数","运行数","❤️ 次数"])
+        ptAli = PrettyTable(["   实例    ", "   类型   ","   状态   ","  Ip  ","     Host     ","  Cpu  ","   Mem   ","   线程数   ","  运行数  ","  ❤️ 次数  "])
         for ali in lstAli:
 
             status = ali['status']
@@ -97,7 +97,7 @@ class EdcMonitor(object):
             ])
    
     
-        ptTask = PrettyTable(["任务", "类型","状态","ST总数","ST计算","ST分派","ST未执行","ST失败","ST完成"])
+        ptTask = PrettyTable(["   任务   ", "   类型   ","   状态   ","   ST总数   " ,"   ST计算   ","   ST分派   ","   ST未执行   ","   ST失败   ","   ST完成   "])
         for task in lstTask:
 
             status = task['status']
@@ -116,7 +116,7 @@ class EdcMonitor(object):
                 task['stComputed']
             ])
 
-        ptLog = PrettyTable(["操作", "类型","实例","任务","日志内容","时间"])
+        ptLog = PrettyTable([" 操作 ", "  类型  ","实例","任务","       日志内容       ","时间"])
 
         for log in lstLog:
  
@@ -137,6 +137,8 @@ class EdcMonitor(object):
     
 
         os.system("clear")
+
+        sys.stdout.write(self._dog('I am EasyDc'))
         sys.stdout.write("\n实例信息\n")
         sys.stdout.write(str(ptAli))
 
@@ -160,6 +162,16 @@ class EdcMonitor(object):
         ptLog = None
 
 
+    def _dog(self,option):
+        return '''
+            _______
+            <%s    >
+            -------
+                    \   ^__^
+                     \  (oo)\_______
+                        (__)\       )\/\  
+                            ||----w |
+                            ||         ||''' % option
 
 
     def _red(self, s):
