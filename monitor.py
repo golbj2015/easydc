@@ -164,14 +164,14 @@ class EdcMonitor(object):
 
     def _dog(self,option):
         return '''
-            _______
-            <%s    >
-            -------
+            _______________
+            <%s >
+            ---------------
                     \   ^__^
                      \  (oo)\_______
                         (__)\       )\/\  
                             ||----w |
-                            ||         ||''' % option
+                            ||     ||''' % option
 
 
     def _red(self, s):
