@@ -28,10 +28,16 @@ class Model(object):
         '''
         return self.db[tableName].find_one(filterCond)
 
-    def getModels(self,tableName,filterCond,limits):
+    def getModels(self,tableName,filterCond,limits,sorts=[('addtime', 1)]):
         '''查询多条数据
         '''
-        return self.db[tableName].find(filterCond,limit=limits,sort=[ ('addtime', 1) ])
+        return self.db[tableName].find(filterCond,limit=limits,sort=sorts)
+
+
+    def getCount(self,tableName,filterCond):
+        '''查询条数
+        '''
+        return self.db[tableName].find(filterCond).count()
         
     def addModel(self,tableName,addData,pkField=None):
         '''新增一条数据
