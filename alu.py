@@ -398,7 +398,7 @@ class AluCheckTask(Alu):
 
     def run(self,obj):
         ''' 检查任务
-            已经分派但实例异常的任务需要重新分派
+            已经分派,计算中的但实例异常的任务需要重新分派
         '''
         
         while True:
@@ -410,7 +410,7 @@ class AluCheckTask(Alu):
                 continue
 
             query = {
-                     'status' : TASK_STATUS_ALLOTED 
+                    'status' : {"$in":[TASK_STATUS_ALLOTED,TASK_STATUS_COMPUTING]} 
                 }
 
             allotedTasks = self.getModels('TaskQuere',query,100)

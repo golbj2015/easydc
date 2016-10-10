@@ -29,6 +29,10 @@ class EdcMonitor(object):
 
         self._show(lstAli,lstTask,lstLog)
 
+        del lstAli
+        del lstTask
+        del lstLog
+
 
     def _getData(self):
         '''获取数据
@@ -36,7 +40,7 @@ class EdcMonitor(object):
         model = Model()
 
         #实例数据
-        lstAli = model.getModels('Ali',{},10,[('addtime', -1)])
+        lstAli = model.getModels('Ali',{},10,[('status',-1),('addtime', -1)])
 
         #任务数据
         lstPTask = model.getModels('PTask',{},10,[('addtime', -1)])
@@ -48,7 +52,7 @@ class EdcMonitor(object):
                         '_id'     : task['_id'],
                         'bizType' : task['bizType'],
                         'status'  : task['status'],
-                        'stTotal' : model.getCount('TaskQuere',{'PTaskId':ptaskId}),
+                        'stTotal' : model.getCount('TaskQuere',{'PTaskId':ptaskId,'taskType':'subtask'}),
                         'stRun'   : model.getCount('TaskQuere',{'PTaskId':ptaskId,'status':'computing'}),
                         'stAllot' : model.getCount('TaskQuere',{'PTaskId':ptaskId,'status':'alloted'}),
                         'stSpilt' : model.getCount('TaskQuere',{'PTaskId':ptaskId,'status':'splited'}),
@@ -56,9 +60,11 @@ class EdcMonitor(object):
                         'stComputed' : model.getCount('TaskQuere',{'PTaskId':ptaskId,'status':'computed'}),
                     }
             )
+
+        del lstPTask
         
         #查询日志
-        lstLog = model.getModels('Logger',{},10)
+        lstLog = model.getModels('Logger',{},10,[('addtime', -1)])
 
         return lstAli,lstTask,lstLog
 
@@ -66,7 +72,6 @@ class EdcMonitor(object):
     def _show(self,lstAli,lstTask,lstLog):
         '''显示
         '''
-
         
         ptAli = PrettyTable(["实例", "类型","状态","Ip","Host","Cpu","Mem","线程数","运行数","❤️ 次数"])
         for ali in lstAli:
@@ -88,13 +93,10 @@ class EdcMonitor(object):
                 ali['mem'],
                 ali['thNum'],
                 ali['runCount'],
-                ali['beat']
+                ali.get('beat',0)
             ])
    
-        ptAli.sort_key("类型")
-        ptAli.reversesort = True
- 
-
+    
         ptTask = PrettyTable(["任务", "类型","状态","ST总数","ST计算","ST分派","ST未执行","ST失败","ST完成"])
         for task in lstTask:
 
@@ -113,12 +115,8 @@ class EdcMonitor(object):
                 task['stFail'],
                 task['stComputed']
             ])
-   
-        ptTask.sort_key("类型")
-        ptTask.reversesort = True
-         
+
         ptLog = PrettyTable(["操作", "类型","实例","任务","日志内容","时间"])
-        init(autoreset=True)
 
         for log in lstLog:
  
@@ -136,24 +134,32 @@ class EdcMonitor(object):
                 log['logContent'],
                 log['addtime'] 
             ])
-   
-        ptLog.sort_key("类型")
-        ptLog.reversesort = True
-
+    
 
         os.system("clear")
-        print "实例信息"
-        print(ptAli)
+        sys.stdout.write("\n实例信息\n")
+        sys.stdout.write(str(ptAli))
 
-        print "任务信息"
+        sys.stdout.write("\n任务信息\n")
+        sys.stdout.write(str(ptTask))
 
-        print(ptTask)
+        sys.stdout.write("\n执行日志\n")
+        sys.stdout.write(str(ptLog))
 
-        print "执行日志"
-        print(ptLog)
+        sys.stdout.write("\n\33[5m\r❤️ %d\033[0m" % self.count)
 
-        print "\n"
-        print "\33[5m\r❤️ %d\033[0m" % self.count
+        sys.stdout.flush()
+
+   
+        del ptAli
+        del ptTask
+        del ptLog
+
+        ptAli = None
+        ptTask = None
+        ptLog = None
+
+
 
 
     def _red(self, s):
@@ -182,14 +188,21 @@ if __name__ == '__main__':
     if tick:
         tick = int(tick)
 
-    monitor = EdcMonitor()
+    try:
 
-    while tick > 0:
-        monitor.count+=1
-        monitor.run()
-        time.sleep(tick)
+        monitor = EdcMonitor()
 
-    monitor.run()
+        while tick > 0:
+            monitor.count+=1
+            monitor.run()
+            time.sleep(tick)
+        else:
+            monitor.run()
+
+    except KeyboardInterrupt:
+
+        pass
+        
 
     
 

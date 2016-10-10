@@ -41,16 +41,6 @@ class TestTaskSplit(unittest.TestCase):
                     {'md5':md5,'md5len':4},
                     {'md5':md5,'md5len':4},
                     {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
-                    {'md5':md5,'md5len':4},
                     {'md5':md5,'md5len':4}
                 ]
 
