@@ -7,12 +7,10 @@ sys.setdefaultencoding('utf8')
 
 from uuid import uuid4
 
-from easydc.core import Ali
+from ali import Ali
 from executor import EXECUTORS
 
 ''' 执行入口
-    
-   python -m easydc 
 '''
 
 

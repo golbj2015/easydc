@@ -15,7 +15,7 @@
 
  启动实例：python -m easydc
  
- 分割任务：python -m unittest -v split_test.TestTaskSplit
+ 分割任务：python split.py
 
  监控命令：python monitor.py  --tick=5
 

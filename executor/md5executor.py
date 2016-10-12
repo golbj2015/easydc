@@ -1,47 +1,15 @@
 # encoding=utf8
-# The task base
+
+''' 业务算法
+'''
+
 import gevent
 import string  
 import hashlib 
 import random
-from task import *
 
-class TaskExecutor(object):
-    
-    ali = None 
-    def __call__(self, task):
-        
-        raise NotImplementedError
-
-
-class EchoTaskExecutor(TaskExecutor):
-
-    id = 'edc.echo'
-    def __call__(self,opType, task):
-
-        print "EchoTaskExecutor start",opType
-        #print gevent.getcurrent()
-        gevent.sleep(30)
-
-        print "EchoTaskExecutor end"
-        return "ok"
+from easydc.core import TaskExecutor
  
-
-class AddTaskExecutor(TaskExecutor):
-
-    id = 'edc.add'
-    def __call__(self, opType,task):
-
-
-        print "AddTaskExecutor start",opType
-        #print gevent.getcurrent()
-        gevent.sleep(30)
-        print "AddTaskExecutor end"
-
-        return "ok"
- 
-
-
 class CrackMd5Executor(TaskExecutor):
     '''强制破解md5
        支持数字＋字母（区分大小写）
@@ -51,7 +19,6 @@ class CrackMd5Executor(TaskExecutor):
     def __call__(self, opType,task):
 
         if opType=='compute':
-            ptask = PTask()
             self.ptaskId = task['PTaskId']
             self.subTaskId = task['_id']
             bizInfo = task['bizInfo']
@@ -125,11 +92,3 @@ class CrackMd5Executor(TaskExecutor):
             ret = self.crack(s+i,num)  
             if ret:return ret
             gevent.sleep(0)
-
-
-EXECUTORS = [
-    EchoTaskExecutor,
-    AddTaskExecutor,
-    CrackMd5Executor
-
-]
