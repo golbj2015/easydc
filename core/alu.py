@@ -134,10 +134,13 @@ class AluCompute(Alu):
 
             result = None
             try:
-                result = executor(computeType,task)
+                result = executor.compute(task)
             except Exception,e:
 
                 print "subtask %s fail to compute, error message:%s" %(taskId,str(e))
+
+                Logger.log("compute","计算失败,原因:%s"%str(e),aliId=self.aliId,logType=LOG_LEVEL_ERROR)
+
                 taskQ = self.getModel('TaskQuere',{'_id':taskId})
                 #重试3次
                 tryCount = taskQ.get('tryCount',0) + 1
@@ -190,11 +193,10 @@ class AluCompute(Alu):
             #查询所有子任务结果
             subTasks = self.getModels('SubTask',{'PTaskId' : taskId },1000)
             try:
-                executor(computeType,subTasks)
+                executor.merge(subTasks)
             except Exception,e:
                 self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_FAILED,'errInfo':str(e)})
-
-                Logger.log("complete","任务合并失败,原因:%s"%str(e),aliId=self.aliId,ptaskId=taskId,logType=LOG_LEVEL_ERROR)
+                Logger.log("merge","任务合并失败,原因:%s"%str(e),aliId=self.aliId,ptaskId=taskId,logType=LOG_LEVEL_ERROR)
             else:
                 #更新子任务状态为TASK_STATUS_COMPELED
                 self.updateModel('PTask',{'_id':taskId},{'status':TASK_STATUS_COMPELED})
@@ -232,7 +234,10 @@ class AluHeartBeat(Alu):
             obj.aliData = aliData
             obj.aliType = aliData['aliType']
 
-            self.updateModel('Ali',{'_id':self.aliId},{'beat':beatCount})
+            #计算运行的任务数量
+            runCount = self.getCount('TaskQuere',{'aliId' : self.aliId, 'status'  : TASK_STATUS_COMPUTING })
+
+            self.updateModel('Ali',{'_id':self.aliId},{'beat':beatCount,'runCount':runCount})
 
             #检查完成的任务  Leader负责
             self._getPtaskStatus(obj)

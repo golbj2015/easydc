@@ -16,44 +16,49 @@ class CrackMd5Executor(TaskExecutor):
     '''
 
     id = 'edc.crackmd5'
-    def __call__(self, opType,task):
 
-        if opType=='compute':
-            self.ptaskId = task['PTaskId']
-            self.subTaskId = task['_id']
-            bizInfo = task['bizInfo']
-            
-            self.apt=string.printable[:-38]
-            self.md5input = bizInfo['md5']
-            self.md5len = int(bizInfo['md5len'])+1    #生成字符的位数  
+    def compute(self,task):
+        '''计算子任务
+        '''
+        self.ptaskId = task['PTaskId']
+        self.subTaskId = task['_id']
+        bizInfo = task['bizInfo']
+        
+        self.apt=string.printable[:-38]
+        self.md5input = bizInfo['md5']
+        self.md5len = int(bizInfo['md5len'])+1    #生成字符的位数  
 
-            self.index = 0
-            self.tmpIndex = 0
-            self.total = 52**self.md5len
+        self.index = 0
+        self.tmpIndex = 0
+        self.total = 52**self.md5len
 
-            #每次打乱字符串顺序
-            apts = list(self.apt)
-            random.shuffle(apts)
+        #每次打乱字符串顺序
+        apts = list(self.apt)
+        random.shuffle(apts)
 
-            self.apt = ''.join(apts)
+        self.apt = ''.join(apts)
 
-            print "CrackMd5Executor start",opType,bizInfo,self.apt
+        print "CrackMd5Executor start to compute",bizInfo,self.apt
 
-            for j in range(1,self.md5len):  
-                ret = self.crack("",j)  
-                if ret :
-                    print "CrackMd5Executor success",ret
+        for j in range(1,self.md5len):  
+            ret = self.crack("",j)  
+            if ret :
+                print "CrackMd5Executor success",ret
 
-                    #强制完成
-                    self.ali.finishPTask(self.ptaskId)
-                    return ret
+                #强制完成
+                self.ali.finishPTask(self.ptaskId)
+                return ret
 
-            return ''
-        else:
-            print "merge result",task
+        return ''
 
-            for cursor in task:
-                print cursor
+
+    def merge(self,tasks):
+        '''合并任务
+        '''
+        print "merge result",tasks
+
+        for task in tasks:
+            print task
 
         return "ok"
 

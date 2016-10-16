@@ -78,7 +78,7 @@ class EdcMonitor(object):
 
             status = ali['status']
             if status=='abnormal' : 
-                status = self._red(status) 
+                status = self._gray(status) 
 
             aliType = ali['aliType']
             if aliType=='Leader' : 
@@ -169,13 +169,17 @@ class EdcMonitor(object):
             ---------------
                     \   ^__^
                      \  (oo)\_______
-                        (__)\       )\/\  
-                            ||----w |
-                            ||     ||''' % option
+                        (_)@\ ☁️☁️️☁️   )\/\  
+                            ||----~||
+                            !!     !!''' % option
 
 
     def _red(self, s):
         return Fore.RED + s + Fore.RESET
+
+    def _gray(self, s):
+        return Fore.MAGENTA + s + Fore.RESET
+    
     
     def _yellow(self, s):
         return Fore.YELLOW + s + Fore.RESET  
