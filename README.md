@@ -18,16 +18,16 @@
 ## 使用说明
 
 ### 实例实现
-1. 一个进程只可以启动一个运算实例
-2. 实例必须有一个唯一Id，可以使用uuid4生成
-3. 实例注册时需要传出IP ,其余参数可选
+* 一个进程只可以启动一个运算实例
+* 实例必须有一个唯一Id，可以使用uuid4生成
+* 实例注册时需要传出IP ,其余参数可选
     hostname － 服务器host
     dockerName - docker 名称 
     cpu  - cpu 使用比例
     mem  - 内存大小
     weight － 子任务分派权重 
-4. 实例启动时需传入执行实现,执行者实现参考下文
-5. 代码示例参考__main__.py文件
+* 实例启动时需传入执行实现,执行者实现参考下文
+* 代码示例参考__main__.py文件
 
  启动实例
  ```python
@@ -35,8 +35,8 @@
  ```
 
 ### 执行者实现
-1. 执行者为业务代码最终实现
-2. 执行者需要继承TaskExecutor,实现compute和merge方法
+* 执行者为业务代码最终实现
+* 执行者需要继承TaskExecutor,实现compute和merge方法
 ```
     def compute(self,task):
         '''计算子任务
@@ -50,21 +50,21 @@
             tasks － 子任务列表
         '''
 ```
-3. 每个执行者有唯一的id用来区分业务, 例如:id = 'edc.crackmd5'
-4. 强制关闭父任务，如果一个子任务计算完成，强制关闭其它子任务
+* 每个执行者有唯一的id用来区分业务, 例如:id = 'edc.crackmd5'
+* 强制关闭父任务，如果一个子任务计算完成，强制关闭其它子任务
 ```
     self.ali.finishPTask(self.ptaskId)   #强制关闭父任务
     self.ali.checkFinished(self.ptaskId) #检查父任务是否完成
 ```
-5.更新执行进度, 进度比例需要自己实现
+* 更新执行进度, 进度比例需要自己实现
 ```
 self.ali.updateProcess(self.subTaskId,process)
 ```
-6. 代码示例参考executor.md5executor.py
+* 代码示例参考executor.md5executor.py
 
 ###分割任务
-1. 一个任务分割为多个子任务
-2. 调用分割接口实现分割功能 
+* 一个任务分割为多个子任务
+* 调用分割接口实现分割功能 
 ```
     taskSplit = TaskSplit()
     bizType = '业务类型' #同执行ID
@@ -73,7 +73,7 @@ self.ali.updateProcess(self.subTaskId,process)
     taskSplit.run(bizType,bizPtask,bizSubTasks)
 ```
 
-3. 代码示例参考split.py
+* 代码示例参考split.py
 
 分割任务
 ```
@@ -81,7 +81,7 @@ self.ali.updateProcess(self.subTaskId,process)
 ```
 
 ### 监控任务
-1. 监控运算实例和任务运行情况
+* 监控运算实例和任务运行情况
 
 监控命令
 ```
